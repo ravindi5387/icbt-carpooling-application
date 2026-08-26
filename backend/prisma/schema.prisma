@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  firstName     String
+  lastName      String
+  email         String         @unique
+  passwordHash  String
+  phone         String?
+  role          UserRole       @default(PASSENGER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  bookings      Booking[]
+  notifications Notification[]
+  reviewsGot    Review[]       @relation("ReviewedUser")
+  reviewsGiven  Review[]       @relation("Reviewer")
+  rides         Ride[]
+  vehicles      Vehicle[]
+}
+
+model Vehicle {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  make           String
+  model          String
+  registrationNo String   @unique
+  seats          Int
+  createdAt      DateTime @default(now())
+  rides          Ride[]
+  owner          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Ride {
+  id             Int        @id @default(autoincrement())
+  driverId       Int
+  vehicleId      Int
+  startLocation  String
+  destination    String
+  departureTime  DateTime
+  availableSeats Int
+  pricePerSeat   Decimal    @db.Decimal(10, 2)
+  status         RideStatus @default(ACTIVE)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  bookings       Booking[]
+  reviews        Review[]
+  driver         User       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle    @relation(fields: [vehicleId], references: [id])
+}
+
+model Booking {
+  id          Int           @id @default(autoincrement())
+  rideId      Int
+  passengerId Int
+  seats       Int           @default(1)
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  passenger   User          @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+  ride        Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
+
+  @@unique([rideId, passengerId])
+}
+
+model Review {
+  id             Int      @id @default(autoincrement())
+  rideId         Int
+  reviewerId     Int
+  reviewedUserId Int
+  rating         Int
+  comment        String?
+  createdAt      DateTime @default(now())
+  reviewedUser   User     @relation("ReviewedUser", fields: [reviewedUserId], references: [id], onDelete: Cascade)
+  reviewer       User     @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  ride           Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+
+  @@unique([rideId, reviewerId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum UserRole {
+  PASSENGER
+  DRIVER
+  ADMIN
+}
+
+enum RideStatus {
+  ACTIVE
+  FULL
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
