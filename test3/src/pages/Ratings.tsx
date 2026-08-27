@@ -1,0 +1,8 @@
+import {FormEvent,useState} from "react";
+import {Star,CheckCircle2} from "lucide-react";
+import {rateTrip} from "../services/featureApi";
+export default function Ratings(){
+ const [rating,setRating]=useState(5);const [review,setReview]=useState("");const [saved,setSaved]=useState(false);
+ async function submit(e:FormEvent){e.preventDefault();await rateTrip("trip-demo",rating,review);setSaved(true);setReview("");}
+ return <div className="page narrow-page"><div className="page-heading"><div><span className="eyebrow">COMMUNITY FEEDBACK</span><h1>Ratings & reviews</h1><p>Build trust by rating drivers and passengers after completed trips.</p></div></div><div className="rating-layout"><section className="panel rating-summary"><span className="eyebrow">YOUR RATING</span><div className="rating-big">4.8 <Star fill="currentColor"/></div><p>Based on 24 completed trips</p><div className="rating-bars">{[5,4,3,2,1].map((x,i)=><div key={x}><span>{x}</span><div><i style={{width:`${[88,8,3,1,0][i]}%`}}/></div></div>)}</div></section><section className="panel"><span className="eyebrow">RATE A COMPLETED TRIP</span><h2>How was your ride?</h2>{saved&&<div className="alert success"><CheckCircle2 size={16}/> Review submitted.</div>}<form className="rating-form" onSubmit={submit}><div className="stars">{[1,2,3,4,5].map(x=><button type="button" key={x} onClick={()=>setRating(x)} className={x<=rating?"selected":""}><Star fill={x<=rating?"currentColor":"none"}/></button>)}</div><textarea rows={6} value={review} onChange={e=>setReview(e.target.value)} placeholder="Share a respectful review about the ride…"/><button className="button button-primary">Submit review</button></form></section></div></div>
+}
