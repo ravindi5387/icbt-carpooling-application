@@ -3,11 +3,12 @@ import { hashPassword, comparePassword } from "../utils/password";
 import { generateToken } from "../utils/jwt";
 
 interface RegisterInput {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   phone?: string;
-  role?: "PASSENGER" | "DRIVER";
+  role?: "PASSENGER" | "DRIVER" | "ADMIN";
 }
 
 export async function registerUser(data: RegisterInput) {
@@ -25,9 +26,10 @@ export async function registerUser(data: RegisterInput) {
 
   const user = await prisma.user.create({
     data: {
-      name: data.name,
+      firstName: data.firstName,
+      lastName: data.lastName,
       email: data.email,
-      password: hashedPassword,
+      passwordHash: hashedPassword,
       phone: data.phone,
       role: data.role ?? "PASSENGER",
     },
@@ -35,12 +37,14 @@ export async function registerUser(data: RegisterInput) {
 
   return {
     id: user.id,
-    name: user.name,
+    firstName: user.firstName,
+    lastName: user.lastName,
     email: user.email,
     role: user.role,
   };
 }
 
+// ← Add this Login function!
 export async function loginUser(
   email: string,
   password: string
@@ -51,21 +55,14 @@ export async function loginUser(
     },
   });
 
-  console.log("User found:", user);
-  console.log("Password provided:", password);
-
   if (!user) {
     throw new Error("Invalid email or password");
   }
 
-  console.log("Stored hashed password:", user.password);
-
   const validPassword = await comparePassword(
     password,
-    user.password
+    user.passwordHash  // ← 'passwordHash' use பண்ணுங்க!
   );
-
-  console.log("Password valid:", validPassword);
 
   if (!validPassword) {
     throw new Error("Invalid email or password");
@@ -80,7 +77,8 @@ export async function loginUser(
     token,
     user: {
       id: user.id,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       role: user.role,
     },

@@ -7,6 +7,8 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
+  console.error("ACTUAL ERROR:", error);
+
   // Zod validation errors
   if (error instanceof ZodError) {
     return res.status(400).json({

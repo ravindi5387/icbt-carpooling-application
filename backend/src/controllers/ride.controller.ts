@@ -20,11 +20,19 @@ export async function create(
       });
     }
 
-    const data = createRideSchema.parse(req.body);
+    const { origin, destination, departureTime, availableSeats, price, vehicleId, description } = req.body;
+
+    console.log("Request body:", req.body);  // ← Debug log
 
     const ride = await createRide({
-      ...data,
       driverId: req.user.userId,
+      vehicleId: Number(vehicleId),  // ← Convert to number!
+      origin,
+      destination,
+      departureTime,
+      availableSeats: Number(availableSeats),
+      price: Number(price),
+      description,
     });
 
     return res.status(201).json({
@@ -33,6 +41,7 @@ export async function create(
       data: ride,
     });
   } catch (error) {
+    console.error("ACTUAL ERROR:", error);
     next(error);
   }
 }

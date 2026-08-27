@@ -1,17 +1,13 @@
 import "dotenv/config";
 import app from "./app";
+import { createServer } from "http";
+import { initializeSocket } from "./socket";
 
 const PORT = Number(process.env.PORT) || 5000;
 
-async function startServer() {
-  try {
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-}
+const server = createServer(app);
+initializeSocket(server);
 
-startServer();
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

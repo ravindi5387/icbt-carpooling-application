@@ -15,13 +15,16 @@ export async function getProfile(
       });
     }
 
+    console.log("User ID:", req.user.userId);  // ← Debug log
+
     const user = await prisma.user.findUnique({
       where: {
         id: req.user.userId,
       },
       select: {
         id: true,
-        name: true,
+        firstName: true,
+        lastName: true,
         email: true,
         phone: true,
         role: true,
@@ -41,6 +44,7 @@ export async function getProfile(
       data: user,
     });
   } catch (error) {
+    console.error("Profile error:", error);  // ← Debug log
     next(error);
   }
 }

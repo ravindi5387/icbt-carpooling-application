@@ -2,6 +2,7 @@ import { prisma } from "../lib/prisma";
 
 interface CreateRideInput {
   driverId: number;
+  vehicleId: number;  // ← Make sure this is required!
   origin: string;
   destination: string;
   departureTime: string;
@@ -11,15 +12,17 @@ interface CreateRideInput {
 }
 
 export async function createRide(data: CreateRideInput) {
+  console.log("Creating ride with data:", data);  // ← Debug log
+
   return prisma.ride.create({
     data: {
       driverId: data.driverId,
-      origin: data.origin,
+      vehicleId: data.vehicleId,  // ← This must be a number!
+      startLocation: data.origin,
       destination: data.destination,
       departureTime: new Date(data.departureTime),
       availableSeats: data.availableSeats,
-      price: data.price,
-      description: data.description,
+      pricePerSeat: data.price,
     },
   });
 }
@@ -36,7 +39,15 @@ export async function getRides() {
       driver: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+        },
+      },
+      vehicle: {
+        select: {
+          id: true,
+          make: true,
+          model: true,
         },
       },
     },
@@ -55,10 +66,12 @@ export async function getRideById(id: number) {
       driver: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
         },
       },
-      rideRequests: true,
+      vehicle: true,
+      bookings: true,
     },
   });
 }
