@@ -44,7 +44,7 @@ export async function registerUser(data: RegisterInput) {
   };
 }
 
-// ← Add this Login function!
+
 export async function loginUser(
   email: string,
   password: string
@@ -61,7 +61,7 @@ export async function loginUser(
 
   const validPassword = await comparePassword(
     password,
-    user.passwordHash  // ← 'passwordHash' use பண்ணுங்க!
+    user.passwordHash  
   );
 
   if (!validPassword) {
