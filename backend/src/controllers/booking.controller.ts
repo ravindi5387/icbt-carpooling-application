@@ -22,8 +22,8 @@ export async function request(
       });
     }
 
-    const rideId = Number(req.params.rideId);  // ← URL-ல இருந்து!
-    const { seats } = req.body;  // ← Body-ல இருந்து!
+    const rideId = Number(req.params.rideId);  
+    const { seats } = req.body;  
 
     if (!rideId || !seats) {
       return res.status(400).json({
