@@ -48,8 +48,8 @@ export async function requestRide(data: RequestRideInput) {
           driver: {
             select: {
               id: true,
-              firstName: true,   // ← 'name' இல்லை, 'firstName'!
-              lastName: true,    // ← 'name' இல்லை, 'lastName'!
+              firstName: true,   
+              lastName: true,    
               email: true,
             },
           },
