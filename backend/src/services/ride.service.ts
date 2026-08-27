@@ -2,7 +2,7 @@ import { prisma } from "../lib/prisma";
 
 interface CreateRideInput {
   driverId: number;
-  vehicleId: number;  // ← Make sure this is required!
+  vehicleId: number;  
   origin: string;
   destination: string;
   departureTime: string;
@@ -12,12 +12,12 @@ interface CreateRideInput {
 }
 
 export async function createRide(data: CreateRideInput) {
-  console.log("Creating ride with data:", data);  // ← Debug log
-
+  console.log("Creating ride with data:", data);  
+  
   return prisma.ride.create({
     data: {
       driverId: data.driverId,
-      vehicleId: data.vehicleId,  // ← This must be a number!
+      vehicleId: data.vehicleId,  
       startLocation: data.origin,
       destination: data.destination,
       departureTime: new Date(data.departureTime),
