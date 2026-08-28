@@ -28,7 +28,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      -      - name: Install frontend dependencies
+      - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
 
@@ -75,10 +75,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create environment files
-        run: |
-          cp backend/.env.example backend/.env
-          cp frontend/.env.example frontend/.env
+      - name: Create backend environment file
+        run: cp backend/.env.example backend/.env
+
+      - name: Create frontend environment file
+        run: cp frontend/.env.example frontend/.env
 
       - name: Build Docker images
         run: docker compose build
