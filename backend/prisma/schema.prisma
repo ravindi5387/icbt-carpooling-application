@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db { provider = "postgresql" }
+
+model User {
+  id            Int       @id @default(autoincrement())
+  firstName     String
+  lastName      String
+  email         String    @unique
+  passwordHash  String
+  phone         String?
+  memberType    MemberType @default(STUDENT)
+  rideRole      RideRole   @default(BOTH)
+  role          UserRole   @default(USER)
+  verified      Boolean    @default(true)
+  isBlocked     Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  bookings      Booking[]
+  notifications Notification[]
+  reviewsGot    Review[]   @relation("ReviewedUser")
+  reviewsGiven  Review[]   @relation("Reviewer")
+  rides         Ride[]
+  vehicles      Vehicle[]
+  messages      Message[]
+  checkIns      CheckIn[]
+  waitlists     WaitlistEntry[]
+  reportsMade   Report[]   @relation("Reporter")
+  reportsAgainst Report[]  @relation("Reported")
+  trustedContact TrustedContact?
+  blocksMade    Block[]    @relation("Blocker")
+  blocksAgainst Block[]   @relation("Blocked")
+}
+
+model Vehicle {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  make           String
+  model          String
+  registrationNo String   @unique
+  type           VehicleType @default(CAR)
+  seats          Int
+  createdAt      DateTime @default(now())
+  rides          Ride[]
+  owner          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Ride {
+  id             Int        @id @default(autoincrement())
+  driverId       Int
+  vehicleId      Int?
+  startLocation  String
+  destination    String
+  departureTime  DateTime
+  seats          Int
+  availableSeats Int
+  pricePerSeat   Decimal    @db.Decimal(10, 2)
+  vehicleType    VehicleType @default(CAR)
+  notes          String?
+  pickupZone     String?
+  music          String      @default("yes")
+  ac             String      @default("yes")
+  smoking        String      @default("not_allowed")
+  conversation   String      @default("normal")
+  pets           String      @default("not_allowed")
+  distanceKm     Float?
+  recurring      Boolean    @default(false)
+  rideCode       String     @default("0000")
+  status         RideStatus @default(ACTIVE)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  bookings       Booking[]
+  reviews        Review[]
+  driver         User       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle?   @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  messages       Message[]
+  checkIns       CheckIn[]
+  waitlists      WaitlistEntry[]
+  preferences    RidePreference?
+  impacts        ImpactEvent[]
+}
+
+model Booking {
+  id          Int      @id @default(autoincrement())
+  rideId      Int
+  passengerId Int
+  seats       Int      @default(1)
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  passenger   User     @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+  ride        Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  checkIn     CheckIn?
+  @@unique([rideId, passengerId])
+}
+
+model Review {
+  id             Int      @id @default(autoincrement())
+  rideId         Int
+  reviewerId     Int
+  reviewedUserId Int
+  rating         Int
+  comment        String?
+  createdAt      DateTime @default(now())
+  reviewedUser   User     @relation("ReviewedUser", fields: [reviewedUserId], references: [id], onDelete: Cascade)
+  reviewer       User     @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  ride           Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  @@unique([rideId, reviewerId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String
+  type      String   @default("system")
+  rideId    Int?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  rideId    Int
+  senderId  Int
+  text      String
+  createdAt DateTime @default(now())
+  ride      Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model CheckIn {
+  id          Int      @id @default(autoincrement())
+  bookingId   Int      @unique
+  rideId      Int
+  passengerId Int
+  checkedInAt DateTime @default(now())
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  ride        Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  passenger   User     @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+}
+
+model WaitlistEntry {
+  id          Int      @id @default(autoincrement())
+  rideId      Int
+  passengerId Int
+  seats       Int      @default(1)
+  position    Int
+  createdAt   DateTime @default(now())
+  ride        Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  passenger   User     @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+  @@unique([rideId, passengerId])
+}
+
+model RidePreference {
+  id            Int    @id @default(autoincrement())
+  rideId        Int    @unique
+  music         String @default("yes")
+  ac            String @default("yes")
+  smoking       String @default("not_allowed")
+  conversation String @default("normal")
+  pets          String @default("not_allowed")
+  ride          Ride   @relation(fields: [rideId], references: [id], onDelete: Cascade)
+}
+
+model TrustedContact {
+  id      Int    @id @default(autoincrement())
+  userId  Int    @unique
+  name    String
+  phone   String
+  email   String?
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id         Int      @id @default(autoincrement())
+  reporterId Int
+  reportedId Int
+  reason     String
+  status     String   @default("submitted")
+  createdAt  DateTime @default(now())
+  reporter   User     @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported   User     @relation("Reported", fields: [reportedId], references: [id], onDelete: Cascade)
+}
+
+model Block {
+  id        Int      @id @default(autoincrement())
+  blockerId Int
+  blockedId Int
+  createdAt DateTime @default(now())
+  blocker   User    @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User    @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  @@unique([blockerId, blockedId])
+}
+
+model ImpactEvent {
+  id          Int      @id @default(autoincrement())
+  rideId      Int
+  distanceKm  Float
+  passengers  Int
+  fuelSaved   Float
+  moneySaved  Float
+  co2         Float
+  createdAt   DateTime @default(now())
+  ride        Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+}
+
+enum MemberType { STUDENT STAFF }
+enum RideRole { DRIVER PASSENGER BOTH }
+enum UserRole { USER ADMIN }
+enum VehicleType { CAR VAN THREE_WHEELER BIKE }
+enum RideStatus { ACTIVE FULL STARTED COMPLETED CANCELLED }
+enum BookingStatus { PENDING CONFIRMED REJECTED CANCELLED COMPLETED }

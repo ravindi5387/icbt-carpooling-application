@@ -1,0 +1,167 @@
+import { useEffect, useState } from "react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Clock3,
+  MapPin,
+  Navigation,
+  Star,
+  Users,
+  Sparkles,
+  ChevronDown,
+} from "lucide-react";
+import { getMatches } from "../services/featureApi";
+import { Link } from "react-router-dom";
+import { SectionTitle } from "../components/FeatureShell";
+export default function Matching() {
+  const [items, setItems] = useState<any[]>([]);
+  const [sort, setSort] = useState("best");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  useEffect(() => {
+    getMatches()
+      .then((items) => setItems(items as any[]))
+      .catch(() => setItems([]));
+  }, []);
+  const sorted = [...items].sort((a, b) =>
+    sort === "nearest"
+      ? a.distance - b.distance
+      : sort === "time"
+        ? a.ride.time.localeCompare(b.ride.time)
+        : sort === "seats"
+          ? b.ride.seatsAvailable - a.ride.seatsAvailable
+          : b.score - a.score,
+  );
+  return (
+    <div className="page">
+      <SectionTitle
+        eyebrow="SMART MATCHING"
+        title="Smart Matches"
+        description="Explainable route, time, pickup-zone and availability matching."
+        action={
+          <Link to="/rides" className="button button-outline">
+            Search all rides
+          </Link>
+        }
+      />
+      <div className="match-explainer">
+        <Sparkles size={20} />
+        <div>
+          <strong>Explainable matching</strong>
+          <p>
+            The score shows why a ride is recommended instead of hiding the
+            decision behind a single percentage.
+          </p>
+        </div>
+      </div>
+      <div className="match-toolbar">
+        <strong>{sorted.length} recommended rides</strong>
+        <select value={sort} onChange={(e) => setSort(e.target.value)}>
+          <option value="best">Best Match</option>
+          <option value="nearest">Nearest Pickup</option>
+          <option value="time">Earliest Departure</option>
+          <option value="seats">Available Seats</option>
+        </select>
+      </div>
+      <div className="match-grid">
+        {sorted.map(
+          ({ ride, score, distance, pickupMatch, timeMatch }: any) => {
+            const open = expanded === ride.id;
+            return (
+              <article className="match-card" key={ride.id}>
+                <div className="match-score">
+                  <strong>{score}%</strong>
+                  <span>Match</span>
+                </div>
+                <div className="match-content">
+                  <div className="driver">
+                    <div className="avatar large">{ride.driver.name[0]}</div>
+                    <div>
+                      <strong>{ride.driver.name}</strong>
+                      <span>
+                        <Star size={12} fill="currentColor" />{" "}
+                        {ride.driver.rating}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="match-route">
+                    <div>
+                      <small>
+                        <MapPin size={11} /> PICKUP
+                      </small>
+                      <b>{ride.origin}</b>
+                    </div>
+                    <ArrowRight size={16} />
+                    <div>
+                      <small>
+                        <Navigation size={11} /> DESTINATION
+                      </small>
+                      <b>{ride.destination}</b>
+                    </div>
+                  </div>
+                  <div className="match-chips">
+                    <span className={pickupMatch ? "match-good" : ""}>
+                      Pickup area +40%
+                    </span>
+                    <span className="match-good">Destination +30%</span>
+                    <span className={timeMatch ? "match-good" : ""}>
+                      Time +20%
+                    </span>
+                    <span className="match-good">Seats +10%</span>
+                  </div>
+                  <button
+                    className="match-breakdown-toggle"
+                    onClick={() => setExpanded(open ? null : ride.id)}
+                  >
+                    <span>Why {score}%?</span>
+                    <ChevronDown size={15} className={open ? "rotated" : ""} />
+                  </button>
+                  {open && (
+                    <div className="match-breakdown">
+                      <div>
+                        <span>✓ Same pickup area</span>
+                        <b>+40%</b>
+                      </div>
+                      <div>
+                        <span>✓ Same destination</span>
+                        <b>+30%</b>
+                      </div>
+                      <div>
+                        <span>✓ Similar time window</span>
+                        <b>+20%</b>
+                      </div>
+                      <div>
+                        <span>✓ Seats available</span>
+                        <b>+10%</b>
+                      </div>
+                      <strong>{score}% Excellent Match</strong>
+                    </div>
+                  )}
+                  <div className="match-footer">
+                    <span>
+                      <CalendarDays size={13} />
+                      {ride.date}
+                    </span>
+                    <span>
+                      <Clock3 size={13} />
+                      {ride.time}
+                    </span>
+                    <span>
+                      <Users size={13} />
+                      {ride.seatsAvailable} seats
+                    </span>
+                    <Link
+                      className="button button-primary"
+                      to={`/rides/${ride.id}`}
+                    >
+                      View ride
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            );
+          },
+        )}
+      </div>
+    </div>
+  );
+}

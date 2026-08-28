@@ -1,22 +1,6 @@
-# Dependencies
-node_modules/
-
-# Environment files
-.env
-*.env
+**/node_modules/
+**/dist/
+**/.env
+**/.env.local
+*.tsbuildinfo
 !.env.example
-
-# Build files
-dist/
-build/
-
-# Logs
-*.log
-npm-debug.log*
-
-# VS Code
-.vscode/
-
-# OS files
-.DS_Store
-Thumbs.db
