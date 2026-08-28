@@ -1,50 +1,46 @@
-# ICBT Carpooling Application
+# ICBT Carpooling – Integrated Full System
 
-## Project Overview
+This package combines the React/Vite frontend with a PostgreSQL REST API backend.
 
-A client-server carpooling application developed for ICBT students and staff.
+## Stack
+- Frontend: React 18 + TypeScript 5.7 + Vite 6
+- Backend: Node.js + Express + TypeScript
+- Database: PostgreSQL
+- Authentication: JWT + bcrypt
+- REST API base URL: `http://localhost:5000/api`
 
-## Project Goal
+## 1. Start PostgreSQL
+Create a database named `icbt_carpooling`.
 
-The system aims to connect users who need shared transportation with users offering available seats based on route and time availability.
+Default example connection:
+`postgresql://postgres:postgres@localhost:5432/icbt_carpooling`
 
-## Main Features
+## 2. Backend
+```bash
+cd backend
+copy .env.example .env
+# edit DATABASE_URL and JWT_SECRET
+npm install
+npm run dev
+```
+The backend creates its required tables automatically on first startup.
 
-- User Registration
-- User Login
-- Ride Creation
-- Ride Search
-- Ride Joining
-- Route Matching
-- Time-Window Matching
-- Real-Time Messaging
-- Trip History
-- Security
-- Automated Testing
-- Docker
-- CI/CD
-- Deployment
+Optional demo data:
+```bash
+npm run db:seed
+```
+Demo student password: `Student@123`
+Admin username: `icbt.admin`
+Admin password: `Carpool@Admin2026`
 
-## Team Members
+## 3. Frontend
+```bash
+cd frontend
+copy .env.example .env
+npm install
+npm run dev
+```
+The frontend `.env.example` already uses `VITE_DEMO_MODE=false` and points to the REST API.
 
-- Mayurika
-- Suhitha
-- Kaushalya
-- Ravindi
-
-## Technology Stack
-
-### Frontend
-React + TypeScript
-
-### Backend
-Node.js + Express
-
-### Database
-PostgreSQL
-
-### Testing
-Jest / Supertest / Postman
-
-### DevOps
-GitHub / Docker / GitHub Actions
+## Important
+Do not commit `.env` files or real database/JWT credentials to GitHub.
