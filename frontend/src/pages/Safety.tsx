@@ -1,0 +1,189 @@
+import {
+  AlertTriangle,
+  Ban,
+  CheckCircle2,
+  Phone,
+  ShieldCheck,
+  UserRound,
+  Share2,
+  Save,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  reportUser,
+  blockUser,
+  fetchTrusted,
+  saveTrusted,
+} from "../services/featureApi";
+export default function Safety() {
+  const [message, setMessage] = useState("");
+  const [contact, setContact] = useState({ name: "", phone: "", email: "" });
+  useEffect(() => {
+    fetchTrusted()
+      .then((x) => {
+        if (x) {
+          setContact({
+            name: x.name ?? "",
+            phone: x.phone ?? "",
+            email: x.email ?? "",
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+  async function report() {
+    await reportUser("u2", "Safety concern submitted from ride");
+    setMessage("Report submitted to the moderation team.");
+  }
+  async function block() {
+    await blockUser("u2");
+    setMessage("User blocked for future interactions.");
+  }
+  async function save() {
+    if (!contact.name || !contact.phone) {
+      setMessage("Enter a trusted contact name and phone number.");
+      return;
+    }
+    await saveTrusted(contact);
+    setMessage(
+      "Trusted contact saved. You can share confirmed trip details with them.",
+    );
+  }
+  return (
+    <div className="page narrow-page">
+      <div className="page-heading">
+        <div>
+          <span className="eyebrow">TRUST & SAFETY</span>
+          <h1>Safety centre</h1>
+          <p>
+            Share trips responsibly without requiring full live GPS tracking.
+          </p>
+        </div>
+        <ShieldCheck size={27} />
+      </div>
+      {message && (
+        <div className="alert success">
+          <CheckCircle2 size={16} />
+          {message}
+        </div>
+      )}
+      <div className="safety-grid">
+        <SafetyCard
+          icon={<CheckCircle2 />}
+          title="Verified community accounts"
+          text="Use verified Student/Staff profiles and visible verification badges."
+        />
+        <SafetyCard
+          icon={<Phone />}
+          title="Emergency contact"
+          text="Keep an emergency contact available for your own safety."
+        />
+        <SafetyCard
+          icon={<UserRound />}
+          title="Driver trust profile"
+          text="Review ratings, completed rides and verification before joining."
+        />
+        <SafetyCard
+          icon={<ShieldCheck />}
+          title="QR / code check-in"
+          text="Confirm your pickup and trip details before departure."
+        />
+        <SafetyCard
+          icon={<AlertTriangle />}
+          title="Report a user"
+          text="Send a concern to the moderation team for review."
+          action={
+            <button className="button button-outline" onClick={report}>
+              Report user
+            </button>
+          }
+        />
+        <SafetyCard
+          icon={<Ban />}
+          title="Block a user"
+          text="Prevent future direct interactions with a user."
+          action={
+            <button className="button button-outline" onClick={block}>
+              Block user
+            </button>
+          }
+        />
+      </div>
+      <section className="trusted-card">
+        <div className="trusted-heading">
+          <div>
+            <span className="eyebrow">TRIP SAFETY</span>
+            <h2>Trusted contact</h2>
+            <p>
+              Save one person who can receive your confirmed trip information.
+            </p>
+          </div>
+          <Share2 size={23} />
+        </div>
+        <div className="two-col">
+          <label>
+            Contact name
+            <input
+              value={contact.name}
+              onChange={(e) => setContact({ ...contact, name: e.target.value })}
+              placeholder="e.g. Parent / Friend"
+            />
+          </label>
+          <label>
+            Phone
+            <input
+              value={contact.phone}
+              onChange={(e) =>
+                setContact({ ...contact, phone: e.target.value })
+              }
+              placeholder="07X XXX XXXX"
+            />
+          </label>
+          <label>
+            Email (optional)
+            <input
+              value={contact.email || ""}
+              onChange={(e) =>
+                setContact({ ...contact, email: e.target.value })
+              }
+              placeholder="contact@example.com"
+            />
+          </label>
+        </div>
+        <button className="button button-primary" onClick={save}>
+          <Save size={16} /> Save trusted contact
+        </button>
+      </section>
+      <div className="safety-guidelines">
+        <h2>Safety guidelines</h2>
+        <ol>
+          <li>Meet at a clear, agreed pickup location.</li>
+          <li>Check the driver's verified profile and vehicle details.</li>
+          <li>Use the 4-digit check-in code before entering the ride.</li>
+          <li>Do not share passwords or sensitive account information.</li>
+          <li>Report suspicious behaviour through the system.</li>
+        </ol>
+      </div>
+    </div>
+  );
+}
+function SafetyCard({
+  icon,
+  title,
+  text,
+  action,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <article className="safety-feature">
+      <div className="safety-feature-icon">{icon}</div>
+      <h3>{title}</h3>
+      <p>{text}</p>
+      {action}
+    </article>
+  );
+}
