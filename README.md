@@ -42,5 +42,8 @@ npm run dev
 ```
 The frontend `.env.example` already uses `VITE_DEMO_MODE=false` and points to the REST API.
 
+Demo student password: Student@123
+Admin username: icbt.admin
+Admin password: Carpool@Admin2026
 ## Important
 Do not commit `.env` files or real database/JWT credentials to GitHub.
